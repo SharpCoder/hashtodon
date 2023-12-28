@@ -9,6 +9,20 @@
     let hashtagEl: HTMLInputElement;
     let hashtagListEl: HTMLDivElement;
     let errEl: HTMLDivElement;
+    let loadingEl: HTMLDivElement;
+
+    $: {
+        const defaultInstance = localStorage.getItem('instance');
+        const defaultHashtag = localStorage.getItem('hashtag');
+
+        if (instanceEl && defaultInstance) {
+            instanceEl.value = defaultInstance;
+        }
+
+        if (defaultHashtag && hashtagEl) {
+            hashtagEl.value = defaultHashtag;
+        }
+    }
 
     import * as d3 from 'd3';
     import { crawlV2 } from './crawlerv2';
@@ -36,14 +50,6 @@
 
         // Sort data by posts
         data.sort((a, b) => b.count - a.count);
-
-        // Shuffle data for the lulz
-        // for (let i = 0; i < data.length; i++) {
-        //     const a = data[i];
-        //     const idx = Math.round(Math.random() * data.length - 1);
-        //     data[i] = data[idx];
-        //     data[idx] = a;
-        // }
 
         const node = d3.select(vis).node();
         if (node) {
@@ -167,9 +173,14 @@
 
     async function btnSearch() {
         errEl.dataset['vis'] = 'false';
+        loadingEl.style.display = 'unset';
         btnSearchEl.disabled = true;
         const instance = instanceEl.value;
         const hashtag = hashtagEl.value;
+
+        localStorage.setItem('instance', instance);
+        localStorage.setItem('hashtag', hashtag);
+
         vis.innerHTML = '';
         hashtagListEl.innerHTML = '';
         try {
@@ -178,6 +189,7 @@
             errEl.dataset['vis'] = 'true';
         }
         btnSearchEl.disabled = false;
+        loadingEl.style.display = 'none';
     }
 </script>
 
@@ -203,6 +215,7 @@
                 >Discover Hashtags</button
             >
         </div>
+        <div class="loading" bind:this={loadingEl}>Loading...</div>
         <div class="error" bind:this={errEl}>Error fetching content</div>
         <div id="vis" bind:this={vis}></div>
     </div>
@@ -212,6 +225,13 @@
 <style>
     h1 {
         padding-top: 20px;
+    }
+
+    .loading {
+        font-size: 2rem;
+        padding-top: 50px;
+        font-weight: bold;
+        display: none;
     }
 
     .error {
