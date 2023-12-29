@@ -30,7 +30,7 @@
     type Datum = { label: string; count: number; rank: number };
 
     // Scales
-    const color = '#040403';
+    const color = '#63458A';
     const margin = {
         top: 0,
         right: 0,
@@ -49,7 +49,7 @@
         }
 
         // Sort data by posts
-        data.sort((a, b) => b.count - a.count);
+        // data.sort((a, b) => b.count - a.count);
 
         const node = d3.select(vis).node();
         if (node) {
@@ -60,8 +60,8 @@
                 margin.top -
                 margin.bottom;
 
-            const innerRadius = 90;
-            const outerRadius = Math.min(width, height) / 4;
+            const innerRadius = 60;
+            const outerRadius = Math.min(width, height) / 5;
 
             const xScale = d3
                 .scaleBand()
@@ -149,7 +149,7 @@
                         ? 'rotate(180)'
                         : 'rotate(0)';
                 })
-                .style('font-size', '1rem')
+                .style('font-size', '0.875rem')
                 .style('fill', '#000')
                 .style('font-weight', 'bold')
                 .attr('alignment-baseline', 'middle');
@@ -250,6 +250,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        width: 100%;
     }
 
     .right {
@@ -290,7 +291,8 @@
         margin-top: 20px;
         max-width: 600px;
         width: 100%;
-        z-index: 2;
+        justify-self: center;
+        align-self: center;
         aspect-ratio: 1;
     }
 
