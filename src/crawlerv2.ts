@@ -22,6 +22,17 @@ export type CrawlDatum = {
 
 export type CrawlResult = CrawlDatum[];
 
+function delay(ms: number) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    })
+}
+
+function today() {
+    const now = new Date();
+    return `${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+}
+
 function sanitizeInstance(instance: string) {
     instance = instance.replace('https://', '');
     instance = instance.replace('http://', '');
@@ -41,9 +52,23 @@ function dedupe(arr: string[]) {
 }
 
 export async function crawlV2(instance: string, hashtag: string): Promise<CrawlDatum[]> {
+
+    // Check if we should clear the cache
+    const cache = localStorage.getItem('cache_date');
+    const now = today();
+
+    if (cache && cache !== now) {
+        localStorage.clear();
+    }
+
+    // Clear cache every day
+    localStorage.setItem('cache_date', now);
+
     // Fetch the initial timeline
     const timeline = await fetchTimeline(instance, hashtag);
-    
+
+    // Correlate the categories with how many times they reference
+    // eachother
     const multipliers: Record<string,number> = {};
     for (const tl of timeline) {
         for (const tag of tl.tags) {
@@ -52,7 +77,7 @@ export async function crawlV2(instance: string, hashtag: string): Promise<CrawlD
         }
     }
 
-    // Extract categirues
+    // Extract categories
     const hashtags = dedupe(timeline.flatMap(tl => tl.tags).map(tag => tag.name));
 
     // For each hashtag, accumulate the datums
@@ -61,6 +86,7 @@ export async function crawlV2(instance: string, hashtag: string): Promise<CrawlD
 
     for (const tag of hashtags) {
         promises.push(fetchCounts(instance, tag));
+        await delay(25);
     }
 
     await Promise.all(promises)
